@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="eng">
+    <head>
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+        <title>제품 이미지 션별 프로그램</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+    <body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">리뷰 플랫폼</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#"> <span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"></a>
+        </li>
+        <li class="nav-item dropdown">
+
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" href="#"></a>
+        </li>
+      </ul>
+      <form class="form-inline my-2 my-lg-0">
+          <button type="button" class="btn btn-primary" id="save-all">모두 저장</button>
+        <br>
+        <a class="nav-link" href="/login">로그아웃</a>
+      </form>
+    </div>
+  </nav>
+  <br>
+
+  <div class="container">
+     <br>
+     
+    <table class="dataTable" id="imgTable"> 
+        <br>
+       
+        <tbody id="imgData">
+            <i id="ajaxspinner" class="fas fa-spinner fa-spin fa-3x fa-fw" style="display:none"></i>
+        </tbody>
+      </table>
+
+
+  </div>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    </body>
+    <style>
+            
+        .container {
+            padding: 10 !important;
+             margin: 0 !important;
+        }
+        #clear-btn { 
+            width:90px !important;
+            /* margin-bottom: 5px; */
+        }
+        .btn-primary {
+            width:90px !important;
+            
+        }
+        .save-bt {
+            margin-bottom: 20px;
+        }
+        .form-check {
+            margin-top: 20px;
+        }
+
+
+        #imgTable {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            /* width: 100%; */
+            }
+
+            #imgTable td, #imgTable th {
+            border: 1px solid #ddd;
+            /* padding: 2px; */
+            }
+
+            #imgTable tr:nth-child(even){background-color: #f2f2f2;}
+
+            #imgTable tr:hover {background-color: #ddd;}
+
+            #imgTable th {
+            /* padding-top: 8px;
+            padding-bottom: 8px; */
+            padding: 5px;
+            text-align: left;
+            background-color: #4CAF50;
+            color: white;
+            }
+            ::-webkit-scrollbar {
+            width: 10px;
+            }
+
+            /* Track */
+            ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            }
+            
+            /* Handle */
+            ::-webkit-scrollbar-thumb {
+            background: #888; 
+            }
+
+            /* Handle on hover */
+            ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+            }
+            .title {
+                
+                /* width: 140px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis; */
+                font-size: 12px;
+                white-space: pre-wrap;
+
+                }
+                    /* #imgData td {
+            padding: 0; 
+            margin: 0;
+} */
+
+
+    </style>
+    <script>
+        let mainImage = new Map()
+        let extraImages = new Map() 
+        let emptyMap = new Map()
+        let checkboxMap = new Set()
+        let skip        = new Set()
+        let prodIdSet = new Set()
+
+        $('body').on('dragstart drop', function(e){
+                e.preventDefault();
+             return false;
+        });
+        $(document).ready(function(){
+            requestData()
+
+        });
+
+
+           
+       function requestData() {
+        let url = 'api/products'
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(data) {
+                    console.log(data)
+                    if(data == 'fail') {
+                        location.href = "/login"
+                    }
+                    $("#userName").empty()
+                    printData(data['list'])
+                    let userDetails = data['data']
+                    let user = '<p class="h5">'+userDetails[0].acc_id+'</p><p id="userId" style="display: none;">'+userDetails[0].user_id+'</p>'
+                    $("#userName").append(user)
+
+                },
+                error: function(request, status, error) {
+                  console.log("you have an error on your request, "+error)  
+                }
+
+            })
+       }
+
+
+        function printData(data) {
+            $("#imgData").empty()
+            let appendData = ""
+            console
+            for(let i=0; i<data.length; i++) {
+                let imgList = data[i].image_list
+                prodIdSet.add(""+data[i].prod_id+"")
+                appendData = appendData+ '<tr id="'+data[i].prod_id+'">'+
+                '                           <td id="number">'+i+'</td>' +
+                '                           <td>' +
+                '                               <div>'+ 
+                '                                     <p class="title">'+data[i].name+'</p>'+
+                '                                     <img src="'+data[i].image_list[0].data+'" alt=""  width="180" height="180">'+
+                '                                </div>'+
+                '                            </td>'+
+                '                            <td>'+
+                '                               <div class="cell">'+
+                '                                   <div class="form-check">'+
+                '                                       <input class="form-check-input" type="checkbox" value="" id="addImg">'+
+                '                                       추가 수집'+
+                '                                       <hr>'+
+                '                                       <input class="form-check-input" type="checkbox" value="" id="skipImg">'+
+                '                                       선별 생략'+
+                '                                    </div>'+
+                '                                    <hr>'+
+                '                                    <button type="button" id="clear-btn" class="btn btn-primary btn-sm ">선택 해제</button>'+
+                '                                    <hr>'+
+                '                                    <button type="button" id="save-btn" class="btn btn-primary btn-sm save-bt">저장</button>'+
+                '                                    </div>'+
+                '                             </td>'
+                for(let i=0; i<imgList.length; i++) {
+
+                    appendData = appendData +'<td>'+
+                '                               <img src="'+imgList[i].data+'" id="'+imgList[i].image_id+'" alt="" width="200" height="200">'+
+                '                              </td>'
+                
+                }
+                appendData = appendData+'</tr><hr><hr>'
+                
+            }
+
+            $("#imgData").append(appendData)
+        }
+
+        $("#imgData").on('click', 'button', function() {
+           let id = $(this).attr("id") 
+           console.log(id)
+           let currentRow = $(this).closest("tr")
+           let col1 = $(this).closest("tr").attr("id")
+          // let col1 = currentRow.find("td:eq(0)").text()
+        //    alert(col1) 
+            if(id == "clear-btn") {
+                if (mainImage.has(col1) || extraImages.has(col1)) {
+                    console.log("mapping check main:"+mainImage.has(col1)+"/ extra:"+extraImages.has(col1))
+                  
+                    if (mainImage.has(col1) && extraImages.has(col1)== false) {
+                        let main = mainImage.get(col1)
+                        console.log("mainimage "+main)
+                        $("#"+main).css('border', 'solid 0px white')
+                        mainImage.delete(col1)
+
+                    }else if(mainImage.has(col1) && extraImages.has(col1)) {
+                        let main = mainImage.get(col1)
+                        console.log("mainimage "+main)
+                        $("#"+main).css('border', 'solid 0px white')
+                        mainImage.delete(col1)
+                        let keys = Array.from(extraImages.get(col1).keys()).toString()
+                        console.log("keyList "+keys.toString())
+                        if(keys.includes(",")){
+                            let str = keys.split(",")
+                            console.log(str+" splitted string")
+                            for(let i=0; i<str.length; i++) {
+                                console.log("string array value "+str[i])
+                                $("#"+str[i]).css('border', 'solid 0px white') 
+                            }
+                        }else{
+                            let keyInt = parseInt(keys)
+                            console.log("parsed key to int "+keyInt)
+                            $("#"+keyInt).css('border', 'solid 0px white')
+                        }
+                       
+                        extraImages.delete(col1)
+                    }
+                    else {
+                        let keys = Array.from(extraImages.get(col1).keys())
+                        for(let i=0; keys.length; i++)
+                        {
+                            $("#"+keys[i]).css('border', 'solid 0px white')   
+                        }
+                        extraImages.delete(col1)
+                    }
+                   
+                    
+                }
+            } else if(id == "save-btn") {
+                let jsonData;
+                    if (mainImage.has(col1) || checkboxMap.has(col1)){
+                        let data = new Object()
+                        if(mainImage.has(col1)) {
+                            console.log("images main:"+mainImage.get(col1))
+                            data.mainimage = mainImage.get(col1)
+                            if(extraImages.get(col1).keys() != "undefined" ) {
+                                console.log("keys exists: "+Array.from(extraImages.get(col1).keys()))
+                               console.log(Array.from(extraImages.get(col1).keys()))
+                                let key = Array.from(extraImages.get(col1).keys())
+                                data.listextra = key
+                            }
+                            // if()
+                        }
+                        
+                        if(checkboxMap.has(col1)){
+                            console.log("images check: "+checkboxMap.has(col1))
+                            data.addimg = col1
+                        }
+                           data.prodid = col1 
+                           data.userid = $("#userId").val()
+                          jsonData = JSON.stringify(data)  
+
+                          let url = 'api/save_images'
+                        console.log(jsonData+" jsondata")
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            data: jsonData,
+                            dataType: 'json',
+                            success: function(data) {
+                                console.log(data)
+                                console.log("success")
+                                console.log(jsonData+" jsondata")
+                                mainImage.delete(col1)
+                                if(extraImages.has(col1)) {
+                                    extraImages.delete(col1)
+                                }
+                                $('table#imgTable tr#'+col1).remove();
+
+                                requestData()
+        
+                            },
+                            error: function(request, status, error) {
+                                console.log("wrong credentials")
+                            }
+                    })
+                    }else if(skip.has(col1)) {
+                        return alert("Product will be skipped")
+
+
+                    }else {
+                        
+                        alert("저장할 데이터 없음")
+                        // let data = {
+                        //     idsremove : col1,
+                        //     prodid : col1
+                        // }
+                        // jsonData = JSON.stringify(data)
+                        // prodIdSet.delete(col1)
+                    }
+   
+            }
+        
+        });
+
+        $("#imgData").on( 'scroll', function(){
+                console.log('Event Fired');
+            });
+        // click images
+        $("#imgData").on('click', 'img',function() {
+            let currentRow = $(this).closest("tr")
+            let col1 = $(this).closest("tr").attr("id")
+           // let col1 = currentRow.find("td:eq(0)").text();
+            //console.log(col1)
+            let id = $(this).attr("id")
+            //console.log("image id: "+id)
+            
+            if(mainImage.has(col1)) {
+                if(mainImage.get(col1) == id) {
+                    $("#"+id).css('border', 'solid 0px white')
+                    mainImage.delete(col1)
+                } else {
+                    if(extraImages.get(col1).has(id)) {
+                        $("#"+id).css('border', 'solid 0px white')
+                        extraImages.get(col1).delete(id) 
+                    }else {
+                        $("#"+id).css('border', 'solid 2px green')
+                        extraImages.get(col1).set(id, col1)
+                        let keylist =  Array.from(extraImages.get(col1).keys()); //[...extraImages.get(col1).keys()]
+                        console.log(keylist+" imgList")
+                    }
+                }
+            }else {
+                if(!extraImages.has(col1)){ 
+                    extraImages.set(col1, emptyMap)
+                }
+                if(extraImages.get(col1).has(id)) {
+                    extraImages.get(col1).delete(id)
+                }
+                $("#"+id).css('border', 'solid 2px red')
+                mainImage.set(col1, id)
+            }
+      
+        });
+
+        
+        $("#imgData").on('change' ,'input[type=checkbox]', function() {
+            let id = $(this).attr("id")
+            let currentRow = $(this).closest("tr")
+            let colId = $(this).closest("tr").attr("id");
+            console.log("tr id"+colId)
+            colId = colId.replace(/^"|"$/g, '');
+          // str.replace(/^"|"$/g, '');
+            let col1 = currentRow.find("td:eq(0)").text();
+            if (id == "skipImg") {
+                if (this.checked) {
+                    console.log('checked skip');
+
+                    if ($(".class1:checked").length > 0) {
+                    $(".class3").prop({ disabled: true, checked: false });
+                    }
+                    
+                    skip.add(colId)
+
+                 }else {
+                    skip.delete(colId)
+
+                    if($("#class1:checked").length>0) {
+                        $(".class3").prop({disabled: false, checkded: false});
+                    }
+                    console.log("unchecked skip")
+            }
+       } else if (id == "addImg") {
+                if (this.checked) {
+                    console.log('checked checkbox');
+                    checkboxMap.add(colId)
+
+                 }else {
+                    checkboxMap.delete(colId)
+                    console.log("unchecked checkbox")
+             }   
+       }
+           
+    });
+
+
+        $("#imgData").on("mousedown", "label", function() {
+            let id = $(this).attr("id")
+            let currentRow = $(this).closest("tr")
+            let colId = $(this).closest("tr").attr("id");
+            console.log("tr id"+colId)
+        })
+
+
+
+
+    $("#save-all").click(function(){
+
+        if(confirm("Warning 모든 데이터를 저장하시겠습니까?\n" )== false ){
+            return
+        }
+        
+       
+        let mainKeys  = 0
+        let extraKeys = ""
+        let pordIds = 0;
+        let checkKeys = 0;
+        let data = new Object()
+        let skipped =  Array.from(skip)
+        console.log(skip)
+        console.log(prodIdSet)
+        for(let i =0; i<skipped.length; i++) {
+            console.log(prodIdSet.has(skipped[i]))
+            prodIdSet.delete(skipped[i]);
+        }
+        
+
+        if(mainImage.size > 0){
+           let keys  = Array.from(mainImage.keys())
+           let mainimg = Array.from(mainImage.values())
+           data.listmain = mainimg
+           data.listids = keys
+           let extraArr = []
+           for(let j=0; j<keys.length; j++){ 
+            if(extraImages.get(keys[j]).keys() != "undefined") {
+                    console.log("keys exists: ")
+                    let key = Array.from(extraImages.get(keys[j]).keys())
+                    extraArr = extraArr.concat(key)
+                 }
+           }
+           if(extraArr.length>0) {
+               data.listextra = extraArr
+           }
+
+           for(let i =0; i<keys.length; i++) {
+            console.log(prodIdSet.has(keys[i]))
+            prodIdSet.delete(keys[i]);
+         }
+        }
+
+        if(checkboxMap.size> 0) {
+            data.checkbox  = Array.from(checkboxMap)
+        }
+        
+            data.idsremove = Array.from(prodIdSet)
+            let jsonReq = JSON.stringify(data)
+            console.log(jsonReq)
+        
+              $.ajax({
+                  url: "api/save_all_data",
+                  dataType: "json",
+                  data: jsonReq,
+                  type: "POST",
+                  success: function(data){
+                      console.log(data)
+                      requestData()
+                  },
+                  error: function(request, status, error) {
+                      console.log("error occured")
+                  }
+              })
+        })
+
+
+
+
+        
+
+
+    </script>
+</html>

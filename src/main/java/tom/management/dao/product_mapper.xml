@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd">
+ 
+<mapper namespace="tom.management.dao.ProductDao">
+
+
+
+
+    
+
+    
+      <select id="selectProductbyId" resultType="productVO">
+   		SELECT tb_product.name, tb_product.prod_id
+   			  <!--  tb_compare_product.detail_url -->
+   		FROM tb_product
+   		<!-- JOIN  tb_compare_product on tb_compare_product.prod_id = tb_product.prod_id -->
+   		WHERE tb_product.prod_id = #{prodId}
+   </select>
+    
+
+     <update id="updateByProdId" parameterType="productVO">
+     	UPDATE tb_product
+     	SET need_image = #{img}
+     	
+     	WHERE prod_id = #{prodId}
+     </update>
+ 	
+ 	
+ 
+    
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd">
+
+<mapper namespace="tom.management.dao.AccountDao">
+
+
+
+	<select id ="selectAccount" resultType ="accountVO">
+		SELECT
+			acc_id, acc_pwd, user_id, is_admin, last_access
+		FROM tb_user
+		<if test="id !=null">	
+		WHERE acc_id = #{id}
+		</if>
+		<if test="passwd !=null">
+		AND acc_pwd = #{passwd}	
+		</if>
+		
+	</select>
+	
+	
+ 
+    
+</mapper>	

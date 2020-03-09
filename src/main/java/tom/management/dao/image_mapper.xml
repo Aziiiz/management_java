@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd">
+ 
+<mapper namespace="tom.management.dao.ImageDao">
+
+
+
+
+    
+
+	<select id="selectAllImages" resultType="imageVO">
+    	SELECT *
+    	FROM tb_image
+    	WHERE  user_id = #{userId}
+    	AND(type = 1 OR type = 2 )
+   		AND state = 0 limit #{limit}
+   		
+    </select>
+    
+    <select id="selectImg" resultType="imageVO">
+    	SELECT *
+    	FROM tb_image
+    	WHERE  user_id = -1
+    	AND (type = 1 OR type = 2)
+    	AND state = 0 limit #{limit}
+    </select>
+    
+    <select id="selectImagesById" resultType="imageVO">
+    	SELECT *
+    	FROM tb_image
+    	WHERE parent = #{prodId}
+    	AND state = 0
+    	
+    </select>
+    
+    
+   <select id="selectProductbyId" resultType="productVO">
+   		SELECT tb_product.name,
+   			   tb_compare_product.detail_url
+   		FROM tb_product
+   		JOIN  tb_compare_product on tb_compare_product.prod_id = tb_product.prod_id
+   		WHERE tb_product.prod_id = #{prodId}
+   </select>
+    
+    
+    
+    
+    <update id="updateImagesForUser" parameterType="imageVO">	
+    	UPDATE tb_image
+    	SET user_id = #{userId}
+    	
+    	WHERE image_id IN 
+    	<foreach item="item" collection="id" open="" separator="," close="" >
+    		 #{item}
+    	</foreach>
+    </update>
+    
+   <update id="updatebyImgId" parameterType="imageVO">
+    	UPDATE tb_image
+    	SET user_id = #{userId}
+    	
+    	WHERE image_id = #{imgId}
+    </update>
+    
+    
+    
+    <update id="updateImgType" parameterType="imageVO">
+    	UPDATE tb_image
+    	SET type = #{type},
+    		state = 1
+    	
+    	WHERE image_id = #{imgId}
+    </update>
+    
+    
+    
+    <update id="deleteImgData" parameterType="imageVO">
+    	UPDATE tb_image
+    	SET state = 1,    	
+    	 data = NULL
+    	WHERE image_id NOT IN 
+    	<foreach item="item" collection="id" open="(" separator="," close=")" >
+    		 #{item}
+    	</foreach>
+    	AND parent = #{prodId}
+    </update>
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    <update id="deleteImgByParentId" parameterType="imageVO">
+    	UPDATE tb_image
+    	SET state = 1,    	
+    	data = null 
+    	WHERE parent = #{proId}
+    </update>
+    
+
+
+    
+
+ 	
+ 
+    
+</mapper>

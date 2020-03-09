@@ -1,0 +1,1 @@
+nohup java -Duser.language=ko -Duser.country=KR -Dlog.dir=/Users/shinyoung-jung/movie -jar monitoring-0.0.1-SNAPSHOT.war &
